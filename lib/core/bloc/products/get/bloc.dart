@@ -17,10 +17,15 @@ class ProductsGetBloc extends Bloc<ProductsGetEvent, ProductsGetState> {
     }
   }
 
+  Stream<List<Product>> dataProductsStream = (() async* {
+    yield await ProductsRepository.get();
+  })();
+
   Stream<ProductsGetState> _mapFaqRequestedToState() async* {
     yield ProductsGetLoadingState();
     try {
       List<Product> dataProducts = await ProductsRepository.get();
+
       yield ProductsGetSuccessState(dataProducts: dataProducts);
     } on PlatformException catch (e) {
       yield ProductsGetErrorState(message: e.code);

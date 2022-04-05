@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_testing/core/bloc/products/get/bloc.dart';
 import 'package:flutter_testing/core/bloc/products/get/state.dart';
 import 'package:flutter_testing/core/models/product.dart';
+import 'package:flutter_testing/core/repositories/products.dart';
 
 import '../theme.dart';
 
@@ -28,7 +29,34 @@ class _UserProfileScreenState extends State<ProductsScreen> {
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.w700),
                 )),
-            body: buildUserProfileBloc()));
+            body: buildUserProfileStream()));
+  }
+
+  buildUserProfileStream() {
+    final bloc = BlocProvider.of<ProductsGetBloc>(context);
+
+    return StreamBuilder<List<Product>>(
+      stream: bloc.dataProductsStream,
+      builder: (
+        BuildContext context,
+        AsyncSnapshot<List<Product>> snapshot,
+      ) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.connectionState == ConnectionState.active ||
+            snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError) {
+            return const Text('Error');
+          } else if (snapshot.hasData) {
+            return buildBody(snapshot.data!);
+          } else {
+            return const Text('Empty data');
+          }
+        } else {
+          return Text('State: ${snapshot.connectionState}');
+        }
+      },
+    );
   }
 
   Widget buildUserProfileBloc() {
@@ -41,15 +69,11 @@ class _UserProfileScreenState extends State<ProductsScreen> {
         return Container();
       }
       if (state is ProductsGetSuccessState) {
-        return body(state.dataProducts);
+        return buildBody(state.dataProducts);
       }
 
       return Container();
     });
-  }
-
-  Widget body(List<Product> dataProducts) {
-    return buildBody(dataProducts);
   }
 
   Widget buildBody(List<Product> dataProducts) {
@@ -83,13 +107,17 @@ class _UserProfileScreenState extends State<ProductsScreen> {
                     "\$${product.price}",
                   ),
                   const SizedBox(height: 10),
-                  Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(100)),
-                      child: const Icon(Icons.shopping_basket,
-                          color: Colors.white))
+                  InkWell(
+                      borderRadius: BorderRadius.circular(100),
+                      // When the user taps the button, show a snackbar.
+                      onTap: () {},
+                      child: Ink(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(100)),
+                          child: const Icon(Icons.shopping_basket,
+                              color: Colors.white)))
                 ],
               ),
               const SizedBox(width: 25),

@@ -14,7 +14,7 @@ Future<void> main() async {
 
   runApp(MultiBlocProvider(
     providers: [
-      BlocProvider<ProductsGetBloc>(
+      BlocProvider(
         create: (BuildContext context) => getIt<ProductsGetBloc>(),
       )
     ],
